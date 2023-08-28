@@ -1,0 +1,61 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hello-deployment
+  labels:
+    app: hello
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: hello
+  replicas: 3
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: hello
+    spec:
+      containers:
+      - name: hello
+        image: paulbouwer/hello-kubernetes:1.10.1
+        ports:
+        - containerPort: 8080
+        env:
+          - name: KUBERNETES_NODE_NAME
+            value: "green"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: hello-service
+spec:
+  selector:
+    app.kubernetes.io/name: hello
+  ports:
+    - name: hello-service-port
+      protocol: TCP
+      port: 80
+      targetPort: 8080
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: hello-ingress
+  annotations:
+    alb.ingress.kubernetes.io/target-type: ip
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    external-dns.alpha.kubernetes.io/hostname: weighted.example.com
+    external-dns.alpha.kubernetes.io/aws-weight: "0"
+    external-dns.alpha.kubernetes.io/ttl: "30"
+    external-dns.alpha.kubernetes.io/set-identifier: green-cluster
+spec:
+  ingressClassName: alb
+  rules:
+    - http:
+        paths:
+        - path: /
+          pathType: Prefix
+          backend:
+            service:
+              name: hello-service
+              port:
+                number: 80
