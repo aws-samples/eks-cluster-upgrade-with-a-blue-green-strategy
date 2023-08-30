@@ -36,7 +36,7 @@ git clone git@github.com:aws-samples/eks-cluster-upgrade-with-a-blue-green-strat
 - [demo-application-blue.yaml](/aws-cdks/my-eks-blueprints/lib/utils/manifests/demo-application-blue.yaml#L46) & [demo-application-green.yaml](/aws-cdks/my-eks-blueprints/lib/utils/manifests/demo-application-green.yaml#L46) : `external-dns.alpha.kubernetes.io/hostname` 어노테이션의 값을 수정합니다.
 
 *1-3.* 네트워크 부하 발생 도구([Locust](https://locust.io/))의 대시보드 접속 정보를 업데이트 합니다.
-- [my-eks-blueprints](/aws-cdks/my-eks-blueprints/bin/my-eks-blueprints.ts#L19-L21)
+- [my-eks-blueprints](/aws-cdks/my-eks-blueprints/bin/my-eks-blueprints.ts#L25-L27)
   - `allowedCidrs` : Locust 대시보드에 접속할 때 접속을 허용할 CIDR 주소 범위를 설정합니다.
   - `webUsername` 및 `webPassword` : Locust 대시보드에 로그인 할 때 사용할 계정 정보를 설정합니다.
 

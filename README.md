@@ -35,7 +35,7 @@ git clone git@github.com:aws-samples/eks-cluster-upgrade-with-a-blue-green-strat
 - [demo-application-blue.yaml](/aws-cdks/my-eks-blueprints/lib/utils/manifests/demo-application-blue.yaml#L46) & [demo-application-green.yaml](/aws-cdks/my-eks-blueprints/lib/utils/manifests/demo-application-green.yaml#L46) : Modify the value of the `external-dns.alpha.kubernetes.io/hostname` annotation.
 
 *1-3.* Update the dashboard access information for the network load generation tool. ([Locust](https://locust.io/))
-- [my-eks-blueprints](/aws-cdks/my-eks-blueprints/bin/my-eks-blueprints.ts#L19-L21)
+- [my-eks-blueprints](/aws-cdks/my-eks-blueprints/bin/my-eks-blueprints.ts#L25-L27)
   - `allowedCidrs` : Set the range of CIDR addresses to allow access when accessing the Locust dashboard.
   - `webUsername` & `webPassword` : Set the account information to use when logging in to the Locust dashboard.
 
