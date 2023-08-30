@@ -39,7 +39,7 @@ const blueClusterAddOns: Array<blueprints.ClusterAddOn> = [
 		serviceAccountPolicies: [iam.ManagedPolicy.fromAwsManagedPolicyName("AmazonEKS_CNI_Policy")]
 	}),
 	new blueprints.addons.ClusterAutoScalerAddOn(),
-	new blueprints.addons.CoreDnsAddOn(),
+	new blueprints.addons.CoreDnsAddOn({version: "v1.8.7-eksbuild.7"}),
 	new blueprints.addons.KubeProxyAddOn("v1.23.7-eksbuild.1"),
 	new blueprints.addons.ExternalDnsAddOn({
 		hostedZoneResources: ["blue-cluster-hosted-zone"]
@@ -92,7 +92,7 @@ const greenClusterAddOns: Array<blueprints.ClusterAddOn> = [
 		serviceAccountPolicies: [iam.ManagedPolicy.fromAwsManagedPolicyName("AmazonEKS_CNI_Policy")]
 	}),
 	new blueprints.addons.ClusterAutoScalerAddOn(),
-	new blueprints.addons.CoreDnsAddOn(),
+	new blueprints.addons.CoreDnsAddOn({version: "v1.10.1-eksbuild.2"}),
 	new blueprints.addons.KubeProxyAddOn("v1.27.1-eksbuild.1"),
 	new blueprints.addons.ExternalDnsAddOn({
 		hostedZoneResources: ["green-cluster-hosted-zone"]
