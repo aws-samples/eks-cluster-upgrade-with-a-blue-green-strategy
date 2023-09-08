@@ -43,7 +43,7 @@ metadata:
   annotations:
     alb.ingress.kubernetes.io/target-type: ip
     alb.ingress.kubernetes.io/scheme: internet-facing
-    external-dns.alpha.kubernetes.io/hostname: weighted.example.com
+    external-dns.alpha.kubernetes.io/hostname: my-domain.com
     external-dns.alpha.kubernetes.io/aws-weight: "100"
     external-dns.alpha.kubernetes.io/ttl: "30"
     external-dns.alpha.kubernetes.io/set-identifier: blue-cluster
