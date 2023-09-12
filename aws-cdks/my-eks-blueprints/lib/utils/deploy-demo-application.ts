@@ -5,7 +5,7 @@ import { loadYaml, readYamlDocument } from "@aws-quickstart/eks-blueprints/dist/
  * Deploy the demo web application by referring to the manifest file in the 'utils/manifests' directory.
  * If a 'publicHostedZoneName' is passed as an argument,
  * the value 'external-dns.alpha.kubernetes.io/hostname' in the manifest content
- * is changed to the name of the public hosted zone that was passed.
+ * is changed to the name of the passed public hosted zone with the 'weighted' prefix added.
  *
  * @param cluster
  * @param manifestName
@@ -20,7 +20,8 @@ export function demoApplicationDeploy(
   const manifest = doc.split("---").map((e) => loadYaml(e));
 
   if (publicHostedZoneName) {
-    manifest[2].metadata.annotations["external-dns.alpha.kubernetes.io/hostname"] = publicHostedZoneName;
+    const weightedDomain = "weighted." + publicHostedZoneName;
+    manifest[2].metadata.annotations["external-dns.alpha.kubernetes.io/hostname"] = weightedDomain;
     console.log("Change Public Hosted Zone Name : " + manifest[2].metadata.annotations["external-dns.alpha.kubernetes.io/hostname"]);
   }
 

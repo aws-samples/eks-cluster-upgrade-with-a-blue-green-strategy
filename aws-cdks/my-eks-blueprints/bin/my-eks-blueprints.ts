@@ -16,14 +16,14 @@ const app = new cdk.App();
 // environment variables for the demo
 const account = process.env.CDK_DEPLOY_ACCOUNT || process.env.CDK_DEFAULT_ACCOUNT;
 const region = process.env.CDK_DEPLOY_REGION || process.env.CDK_DEFAULT_REGION;
-const isAlreadyCreatedHostedZone = process.env.CDK_IS_ALREADY_CREATED_HOSTED_ZONE || false;
+const isHostedZoneAlreadyExists = process.env.CDK_IS_HOSTED_ZONE_ALREADY_EXISTS || "false";
 const hostedZoneName = process.env.CDK_HOSTED_ZONE_NAME || "my-domain.com";
 const requestClientUsername = process.env.CDK_REQUEST_CLIENT_USERNAME || "awsuser";
 const requestClientPassword = process.env.CDK_REQUEST_CLIENT_PASSWORD || "passw0rd";
 
 console.log("account : " + account);
 console.log("region : " + region);
-console.log("isAlreadyCreatedHostedZone : ", isAlreadyCreatedHostedZone);
+console.log("isHostedZoneAlreadyExists : ", isHostedZoneAlreadyExists);
 console.log("hostedZoneName : ", hostedZoneName);
 console.log("requestClientUsername : ", requestClientUsername);
 console.log("requestClientPassword : ", requestClientPassword);
@@ -41,12 +41,15 @@ findMyExternalIp().then(
     })
 );
 
-// If a public hosted zone has not been created previously, create a new one.
-if (!isAlreadyCreatedHostedZone) {
-  new PublicHostedZoneStack(app, "public-hosted-zone-stack", {
-    hostedZoneName: hostedZoneName,
-  });
-}
+const publicHostedZone = new PublicHostedZoneStack(app, "public-hosted-zone-stack", {
+  env: {
+    region: region,
+    account: account,
+  },
+  hostedZoneName: hostedZoneName,
+  isHostedZoneAlreadyExists: isHostedZoneAlreadyExists,
+});
+const publicHostedZoneId = cdk.Fn.importValue("publicHostedZoneId");
 
 // create blue-cluster
 const blueClusterAddOns: Array<blueprints.ClusterAddOn> = [
@@ -73,7 +76,7 @@ const blueCluster = blueprints.EksBlueprint.builder()
   .version(eks.KubernetesVersion.V1_23)
   .resourceProvider(
     "blue-cluster-hosted-zone",
-    new blueprints.LookupHostedZoneProvider(hostedZoneName)
+    new blueprints.ImportHostedZoneProvider(publicHostedZoneId)
   )
   .resourceProvider(
     blueprints.GlobalResources.Vpc,
@@ -136,7 +139,7 @@ const greenCluster = blueprints.EksBlueprint.builder()
   .version(eks.KubernetesVersion.V1_27)
   .resourceProvider(
     "green-cluster-hosted-zone",
-    new blueprints.LookupHostedZoneProvider(hostedZoneName)
+    new blueprints.ImportHostedZoneProvider(publicHostedZoneId)
   )
   .resourceProvider(
     blueprints.GlobalResources.Vpc,
@@ -173,5 +176,8 @@ demoApplicationDeploy(
   "demo-application-green",
   hostedZoneName
 );
+
+blueCluster.node.addDependency(publicHostedZone);
+greenCluster.node.addDependency(publicHostedZone);
 
 new CloudWatchStack(app, "cloudwatch-stack");
