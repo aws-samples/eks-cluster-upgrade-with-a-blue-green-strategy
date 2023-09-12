@@ -54,20 +54,22 @@ echo $CDK_HOSTED_ZONE_NAME
 
 *1-3.* **If a public hosted zone for the domain is already configured in Route53 and you want to use that public hosted zone for demo**, define the environment variables as shown in the following command.
 ```bash
-export CDK_IS_ALREADY_CREATED_HOSTED_ZONE=true
+export CDK_IS_HOSTED_ZONE_ALREADY_EXISTS=true
 ```
 
 **If Route53 does not have a public hosted zone configured for the domain**, define an environment variable as shown in the following command to create a new public hosted zone.
 ```bash
-export CDK_IS_ALREADY_CREATED_HOSTED_ZONE=false
+export CDK_IS_HOSTED_ZONE_ALREADY_EXISTS=false
 ```
 
 Use the following command to check if the environment variable has been defined correctly.
 ```bash
-echo $CDK_IS_ALREADY_CREATED_HOSTED_ZONE
+echo $CDK_IS_HOSTED_ZONE_ALREADY_EXISTS
 ```
 
 If you don't set an environment variable, a new public hosted zone will be created by default.
+
+If a public hosted zone does not exist but the `CDK_IS_HOSTED_ZONE_ALREADY_EXISTS` environment variable is set to **true**, an error will occur.
 
 <br>
 
@@ -118,11 +120,34 @@ Access the dashboard with the account information you set up in [step 1](#1-clon
 
 ![locust-login](statics/images/locust-dashboard-insert-userinfo.png)
 
-Next, enter the domain you specified in `Host` and click the `Start swarming` button to start generating traffic.
+If you log in and access the dashboard, you can see the following screen.
 
 ![locust-dashboard](statics/images/locust-dashboard-init-page.png)
 
-(locust 부하 발생되는 이미지 첨부하기)
+Next, enter the domain you specified in `Host`.
+
+When entering Host, add `http://` and `weighted` prefix.
+
+Below is an example : 
+- `http://weighted.my-domain.com`
+
+![locust-dashboard-insert-host](statics/images/locust-dashboard-insert-host.png)
+
+The reason for adding a `weighted` prefix to the domain is to prevent the demo from affecting the production workloads.
+
+In the [deploy-demo-application.ts](/aws-cdks/my-eks-blueprints/lib/utils/deploy-demo-application.ts#L23-L25), you can see the code that changes the value of the `external-dns.alpha.kubernetes.io/hostname` annotation in the ingress manifest to the domain with the `weighted` prefix added.
+
+Since most production workloads don't use `weighted` as a prefix, this demo used `weighted` prefix.
+
+If you want to specify a separate prefix, refer to the `weightedDomain` variable in the [deploy-demo-application.ts](/aws-cdks/my-eks-blueprints/lib/utils/deploy-demo-application.ts#L23) code and modify it to the desired value.
+
+![weighted-domain](statics/images/weighted-domain.png)
+
+Next, click the `Start swarming` button to start generating traffic.
+
+If traffic is generated normally, you can check the graph in the Charts tab as shown below.
+
+![locust-charts](statics/images/locust-charts.png)
 
 ### 5. Modify weighted traffic values for EKS cluster switching
 The Route53 weighted routing feature adjusts the weight value of traffic flowing to the blue and green clusters.

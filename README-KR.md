@@ -56,20 +56,22 @@ echo $CDK_HOSTED_ZONE_NAME
 
 *1-3.* **Route53에 도메인에 대한 Public hosted zone이 이미 구성되어 있고, 해당 Public hosted zone을 실습에 활용하고자 할 경우** 아래 명령과 같이 환경변수를 정의합니다.
 ```bash
-export CDK_IS_ALREADY_CREATED_HOSTED_ZONE=true
+export CDK_IS_HOSTED_ZONE_ALREADY_EXISTS=true
 ```
 
 반대로 **Route53에 도메인에 대한 Public hosted zone이 구성되어 있지 않을 경우**, 새로운 Public hosted zone을 생성하기 위해 아래 명령과 같이 환경변수를 정의합니다.
 ```bash
-export CDK_IS_ALREADY_CREATED_HOSTED_ZONE=false
+export CDK_IS_HOSTED_ZONE_ALREADY_EXISTS=false
 ```
 
 환경변수가 정상적으로 정의되었는지 아래 명령을 통해 확인합니다.
 ```bash
-echo $CDK_IS_ALREADY_CREATED_HOSTED_ZONE
+echo $CDK_IS_HOSTED_ZONE_ALREADY_EXISTS
 ```
 
 별도로 환경변수를 설정하지 않을 경우 기본적으로 새로운 Public hosted zone을 생성합니다.
+
+만약 Public hosted zone이 구성되어 있지 않은 상태에서 `CDK_IS_HOSTED_ZONE_ALREADY_EXISTS` 환경변수를 **true**로 설정했을 경우 에러가 발생합니다.
 
 <br>
 
@@ -121,11 +123,28 @@ cdk deploy --all
 
 ![locust-login](statics/images/locust-dashboard-insert-userinfo.png)
 
-그 다음, `Host`에 지정한 도메인을 기입하고 `Start swarming` 버튼을 클릭하여 트래픽을 발생시킵니다.
+아래는 로그인 후 대시보드에 접속한 초기 화면입니다.
 
 ![locust-dashboard](statics/images/locust-dashboard-init-page.png)
 
-(locust 부하 발생되는 이미지 첨부하기)
+그 다음, `Host`에 지정한 도메인을 기입합니다. 
+이 때, `http://weighted.<지정한 도메인>` 형식으로 `weighted` prefix를 붙여서 입력합니다.
+
+![locust-dashboard-insert-host](statics/images/locust-dashboard-insert-host.png)
+
+도메인에 `weighted` prefix를 추가한 이유는, 실습으로 인해 계정의 운영 워크로드에 영향이 가지 않도록 하기 위함입니다.
+[deploy-demo-application.ts](/aws-cdks/my-eks-blueprints/lib/utils/deploy-demo-application.ts#L23-L25) 코드를 확인하면 ingress manifest 내에 `external-dns.alpha.kubernetes.io/hostname` 어노테이션 값을 `weighted` prefix가 추가된 도메인으로 변경하는 코드를 확인할 수 있습니다.
+
+대부분의 운영 워크로드에서는 `weighted`를 접두어로 사용하지 않기 때문에 해당 데모를 위해서 `weighted` 접두어를 사용하도록 했습니다.
+만약 별도의 접두어를 사용하도록 수정하고 싶다면, [deploy-demo-application.ts](/aws-cdks/my-eks-blueprints/lib/utils/deploy-demo-application.ts#L23) 코드 내의 `weightedDomain` 변수를 참고하여 원하는 접두어를 사용하도록 코드를 수정하세요.
+
+![weighted-domain](statics/images/weighted-domain.png)
+
+마지막으로 `Start swarming` 버튼을 클릭하여 트래픽을 발생시킵니다.
+ 
+트래픽이 정상적으로 발생되면 아래와 같이 Charts 탭에서 그래프를 확인할 수 있습니다.
+
+![locust-charts](statics/images/locust-charts.png)
 
 ### 5. Modify weighted traffic values for EKS cluster switching
 Route53 가중치 라우팅 기능을 통해 블루 클러스터 및 그린 클러스터로 흐르는 트래픽의 가중치 값을 조절합니다.
