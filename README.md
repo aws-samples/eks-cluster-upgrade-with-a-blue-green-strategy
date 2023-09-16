@@ -8,6 +8,8 @@ This project enables you to provision the infrastructure and demo web applicatio
 
 This demo is based on the `ap-northeast-2`. (Seoul region)
 
+This demo uses resources not included in the free-tier, so starting the demo may cost some money.
+
 ## Demo Architecture
 
 ![demo-architecture](statics/images/demo-architecture.png)
@@ -73,7 +75,10 @@ If a public hosted zone does not exist but the `CDK_IS_HOSTED_ZONE_ALREADY_EXIST
 
 <br>
 
-*1-4.* **Account information to sign-in to the Request Client dashboard** is defined as an environment variable as shown below.
+*1-4.* In this demo, we’ll generate user traffic using the open source load testing tool Locust. As we modify weighted traffic from the blue cluster to the green cluster on Route53, we’ll continuously monitor the EKS Ingress requests using CloudWatch.
+
+Locust requires a username and password for their dashboard GUI. The admin account information needed to sign-in to the Request Client dashboard is defined as environment variables as shown below.
+
 ```bash
 export CDK_REQUEST_CLIENT_USERNAME=<username>
 export CDK_REQUEST_CLIENT_PASSWORD=<password>

@@ -10,6 +10,8 @@
 
 해당 데모는 서울 리전(`ap-northeast-2`)을 기반으로 합니다. 
 
+해당 데모에서는 free-tier에 포함되지 않은 리소스도 사용되므로 데모 시작 시 일부 비용이 소요될 수 있습니다.
+
 ## Demo Architecture
 
 ![demo-architecture](statics/images/demo-architecture.png)
@@ -75,7 +77,11 @@ echo $CDK_IS_HOSTED_ZONE_ALREADY_EXISTS
 
 <br>
 
-*1-4.* **Request Client 대시보드에 로그인 할 계정 정보**를 아래와 같이 환경변수로 정의합니다.
+*1-4.* 이 데모에서는 오픈소스 부하 테스트 도구인 Locust를 사용하여 사용자 트래픽을 생성해 보겠습니다. Route53의 블루 클러스터에서 그린 클러스터로 가중치 기반 트래픽을 수정하면서 CloudWatch를 사용하여 EKS Ingress 요청을 지속적으로 모니터링할 예정입니다.
+
+Locust는 대시보드 GUI를 위한 사용자 이름과 비밀번호를 필요로 합니다. Request Client 대시보드에 로그인하는 데 필요한 관리자 계정 정보는 아래와 같이 환경 변수로 정의됩니다.
+
+**Request Client 대시보드에 로그인 할 계정 정보**를 아래와 같이 환경변수로 정의합니다.
 ```bash
 export CDK_REQUEST_CLIENT_USERNAME=<계정명>
 export CDK_REQUEST_CLIENT_PASSWORD=<비밀번호>
@@ -115,7 +121,7 @@ cdk deploy --all
 도메인의 네임 서버를 업데이트 하는 방법은 도메인을 구매한 사이트에서 확인해야 합니다.
 
 ### 4. Continuous HTTP request load for EKS clusters
-브라우저를 통해 네트워크 부하 발생 도구(Locust)의 대시보드에 접속합니다. 이 때 접속 해야 할 엔드포인트는 `request-client` Stack을 프로비저닝 할 때 생성되는 Application Load Balancer의 엔드포인트 입니다. 
+브라우저를 통해 Request Client의 대시보드에 접속합니다. 이 때 접속 해야 할 엔드포인트는 `request-client` Stack을 프로비저닝 할 때 생성되는 Application Load Balancer의 엔드포인트 입니다. 
 
 ![request-client-output](statics/images/request-client-output.png)
 
