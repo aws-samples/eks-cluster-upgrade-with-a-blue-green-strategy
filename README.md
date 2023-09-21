@@ -8,13 +8,27 @@ This project enables you to provision the infrastructure and demo web applicatio
 
 This demo is based on the `ap-northeast-2`. (Seoul region)
 
-This demo uses resources not included in the free-tier, so starting the demo may cost some money.
+
 
 ## Demo Architecture
 
 ![demo-architecture](statics/images/demo-architecture.png)
 
 ## Quick Start
+
+### Be sure to read the notes before the demo
+- You'll need your own domain with **name-servers configurable.**
+- This demo uses resources not included in the free-tier, so **starting the demo may cost some money.**
+- In this demo, **3 new VPCs are created.** Therefore, it is necessary **to check whether the VPC service has enough quota** in advance to avoid being limited by service quotas.
+- The three new VPCs each use the CIDR address ranges of `172.51.0.0/16`, `172.61.0.0/16`, and `10.100.0.0/24`. If the VPC for the current production workload overlaps with the corresponding CIDR address range, some code must be modified **to prevent the demo environment from affecting the production workload.**
+  - How to modify a CIDR address
+    - To modify the CIDR address range for an EKS cluster, see [my-eks-blueprints.ts](/aws-cdks/my-eks-blueprints/bin/my-eks-blueprints.ts#L86,L149).
+      - ![eks-blue-cluster-cidr](statics/images/eks-blue-cluster-cidr.png)
+      - ![eks-green-cluster-cidr](statics/images/eks-green-cluster-cidr.png)
+    - To modify the CIDR address range for an Request Client, see [request-client-stack.ts](/aws-cdks/my-eks-blueprints/lib/request-client-stack.ts#L20).
+      - ![request-client-cidr](statics/images/request-client-cidr.png)
+- You should **check the subdomain used in this demo** to prevent the demo environment from impacting the operating workload. In the demo, it is basically programmed to receive requests by using a subdomain named 'weighted' for this purpose. (e.g., `weighted.example.com`) If you want to use a different subdomain for the demo, you'll need to modify some code.
+  - [How to change the subdomain used in the demo](#reasons-for-using-weighted-subdomains)
 
 ### 0. Pre-Requisites
 - You'll need your own domain with **name-servers configurable**.
@@ -131,20 +145,22 @@ If you log in and access the dashboard, you can see the following screen.
 
 Next, enter the domain you specified in `Host`.
 
-When entering Host, add `http://` and `weighted` prefix.
+When entering Host, add `http://` and `weighted` subdomains.
 
 Below is an example : 
 - `http://weighted.my-domain.com`
 
 ![locust-dashboard-insert-host](statics/images/locust-dashboard-insert-host.png)
 
-The reason for adding a `weighted` prefix to the domain is to prevent the demo from affecting the production workloads.
+#### Reasons for using weighted subdomains
 
-In the [deploy-demo-application.ts](/aws-cdks/my-eks-blueprints/lib/utils/deploy-demo-application.ts#L23-L25), you can see the code that changes the value of the `external-dns.alpha.kubernetes.io/hostname` annotation in the ingress manifest to the domain with the `weighted` prefix added.
+The reason for added a subdomain called `weighted` to the domain is to prevent the demo environment from affecting production workloads.
 
-Since most production workloads don't use `weighted` as a prefix, this demo used `weighted` prefix.
+In the [deploy-demo-application.ts](/aws-cdks/my-eks-blueprints/lib/utils/deploy-demo-application.ts#L23-L25), you can see the code that changes the value of the `external-dns.alpha.kubernetes.io/hostname` annotation in the ingress manifest to the domain with the `weighted` subdomain added.
 
-If you want to specify a separate prefix, refer to the `weightedDomain` variable in the [deploy-demo-application.ts](/aws-cdks/my-eks-blueprints/lib/utils/deploy-demo-application.ts#L23) code and modify it to the desired value.
+Since most production workloads don't use `weighted` as a subdomain, this demo used `weighted` subdomain.
+
+If you want to specify a separate subdomain, refer to the `weightedDomain` variable in the [deploy-demo-application.ts](/aws-cdks/my-eks-blueprints/lib/utils/deploy-demo-application.ts#L23) code and modify it to the desired value.
 
 ![weighted-domain](statics/images/weighted-domain.png)
 

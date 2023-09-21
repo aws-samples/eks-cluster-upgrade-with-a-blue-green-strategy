@@ -10,13 +10,25 @@
 
 해당 데모는 서울 리전(`ap-northeast-2`)을 기반으로 합니다. 
 
-해당 데모에서는 free-tier에 포함되지 않은 리소스도 사용되므로 데모 시작 시 일부 비용이 소요될 수 있습니다.
-
 ## Demo Architecture
 
 ![demo-architecture](statics/images/demo-architecture.png)
 
 ## Quick Start
+
+### 실습 전 유의사항 (필독)
+- **네임서버 변경이 가능한 도메인**이 꼭 필요합니다.
+- 해당 데모에서는 free-tier에 포함되지 않은 리소스도 일부 사용하므로 데모 시작 시 **일부 비용이 발생** 될 수 있습니다.
+- 해당 데모에서는 **새로운 VPC를 3개 생성**합니다. 따라서 **서비스 할당량**에 제한되지 않도록 미리 VPC 서비스의 할당량에 여유가 있는 상태인지 확인이 필요합니다.
+- 새로운 3개의 VPC는 각각 `172.51.0.0/16`, `172.61.0.0/16`, `10.100.0.0/24` 의 **CIDR 주소 범위**를 사용하므로, 데모 실습 환경에서 **해당 CIDR 주소 범위와 겹치는 환경이 없어야 합니다.** 만약 기존에 운영중인 환경이 해당 CIDR 주소 범위와 겹칠 경우, 일부 코드를 수정하여 실습 환경이 운영중인 워크로드에 영향을 주지 않도록 해야 합니다.
+  - CIDR 주소를 수정하는 방법
+    - EKS 클러스터의 CIDR 주소 범위를 수정하려면 [my-eks-blueprints.ts](/aws-cdks/my-eks-blueprints/bin/my-eks-blueprints.ts#L86,L149) 파일을 참조하세요.
+      - ![eks-blue-cluster-cidr](statics/images/eks-blue-cluster-cidr.png)
+      - ![eks-green-cluster-cidr](statics/images/eks-green-cluster-cidr.png)
+    - Request Client의 CIDR 주소 범위를 수정하려면 [request-client-stack.ts](/aws-cdks/my-eks-blueprints/lib/request-client-stack.ts#L20) 파일을 참조하세요.
+      - ![request-client-cidr](statics/images/request-client-cidr.png)
+- 실습 환경으로 인해 운영중인 워크로드에 영향이 가지 않도록 **실습에서 사용되는 서브도메인을 확인**해야 합니다. 데모에서는 이를 위해 기본적으로 `weighted` 라는 이름의 서브도메인을 붙여 요청을 수신하도록 프로그래밍 되어있습니다.(예: `weighted.example.com`) 만약 실습을 위해 다른 서브도메인을 사용하고 싶다면 일부 코드를 수정해야 합니다.
+  - [실습에서 사용되는 서브도메인을 변경하는 방법](#reasons-for-using-weighted-subdomains)
 
 ### 0. Pre-Requisites
 - **네임서버 설정이 가능한** 본인 소유의 도메인이 필요합니다.
@@ -134,15 +146,17 @@ cdk deploy --all
 ![locust-dashboard](statics/images/locust-dashboard-init-page.png)
 
 그 다음, `Host`에 지정한 도메인을 기입합니다. 
-이 때, `http://weighted.<지정한 도메인>` 형식으로 `weighted` prefix를 붙여서 입력합니다.
+이 때, `http://weighted.<지정한 도메인>` 형식으로 `weighted` 서브도메인을 붙여서 입력합니다.
 
 ![locust-dashboard-insert-host](statics/images/locust-dashboard-insert-host.png)
 
-도메인에 `weighted` prefix를 추가한 이유는, 실습으로 인해 계정의 운영 워크로드에 영향이 가지 않도록 하기 위함입니다.
-[deploy-demo-application.ts](/aws-cdks/my-eks-blueprints/lib/utils/deploy-demo-application.ts#L23-L25) 코드를 확인하면 ingress manifest 내에 `external-dns.alpha.kubernetes.io/hostname` 어노테이션 값을 `weighted` prefix가 추가된 도메인으로 변경하는 코드를 확인할 수 있습니다.
+#### Reasons for using weighted subdomains
 
-대부분의 운영 워크로드에서는 `weighted`를 접두어로 사용하지 않기 때문에 해당 데모를 위해서 `weighted` 접두어를 사용하도록 했습니다.
-만약 별도의 접두어를 사용하도록 수정하고 싶다면, [deploy-demo-application.ts](/aws-cdks/my-eks-blueprints/lib/utils/deploy-demo-application.ts#L23) 코드 내의 `weightedDomain` 변수를 참고하여 원하는 접두어를 사용하도록 코드를 수정하세요.
+도메인에 `weighted` 라는 서브도메인을 추가한 이유는, 실습으로 인해 계정의 운영 워크로드에 영향이 가지 않도록 하기 위함입니다.
+[deploy-demo-application.ts](/aws-cdks/my-eks-blueprints/lib/utils/deploy-demo-application.ts#L23-L25) 코드를 확인하면 ingress manifest 내에 `external-dns.alpha.kubernetes.io/hostname` 어노테이션 값을 `weighted` 라는 서브도메인이 추가된 도메인으로 변경하는 코드를 확인할 수 있습니다.
+
+대부분의 운영 워크로드에서는 `weighted`를 서브도메인으로 사용하지 않기 때문에 해당 데모에서는 기본적으로 `weighted` 서브도메인을 사용하도록 코드를 작성했습니다.
+만약 별도의 서브도메인을 사용하도록 수정하고 싶다면, [deploy-demo-application.ts](/aws-cdks/my-eks-blueprints/lib/utils/deploy-demo-application.ts#L23) 코드 내의 `weightedDomain` 변수를 참고하여 원하는 서브도메인을 사용하도록 코드를 수정하세요.
 
 ![weighted-domain](statics/images/weighted-domain.png)
 
