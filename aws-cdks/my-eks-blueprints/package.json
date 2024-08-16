@@ -29,7 +29,7 @@
     "@aws-cdk/lambda-layer-kubectl-v27": "^2.0.0",
     "@aws-quickstart/eks-blueprints": "^1.11.0",
     "aws-cdk-lib": "2.91.0",
-    "axios": "^1.6.0",
+    "axios": "^1.7.4",
     "constructs": "^10.0.0",
     "source-map-support": "^0.5.21"
   }
